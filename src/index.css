@@ -1,0 +1,16 @@
+@import "tailwindcss";
+
+.workspace {
+	position: relative;
+}
+
+.workspace::before {
+	position: fixed;
+	display: block;
+	width: 100%;
+	height: 100%;
+	background-image: radial-gradient(var(--color-neutral-800) 10%, transparent 10%);
+	background-size: 20px 20px;
+	content: "";
+	pointer-events: none;
+}
