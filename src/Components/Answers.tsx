@@ -1,4 +1,5 @@
-import Arrow from "./Arrow.tsx";
+import React from "react";
+import Arrow from "./Arrow";
 import {useEffect, useMemo, useRef, useState} from "react";
 import {CiWarning} from "react-icons/ci";
 

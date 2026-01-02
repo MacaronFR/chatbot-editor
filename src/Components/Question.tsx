@@ -1,9 +1,9 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
-import Bubble from "./Bubble.tsx";
-import Answers from "./Answers.tsx";
-import {useCurrentQuestion} from "../CurrentQuestionHook.tsx";
+import Bubble from "./Bubble";
+import Answers from "./Answers";
+import {useCurrentQuestion} from "../CurrentQuestionHook";
 import * as React from "react";
-import Arrow from "./Arrow.tsx";
+import Arrow from "./Arrow";
 import type {SetState} from "../utils.ts";
 import type {TAction, TAnswers} from "../TQuestion.ts";
 import {CiWarning} from "react-icons/ci";
@@ -77,7 +77,7 @@ export default function Question(props: QuestionProps) {
 			}
 		}
 		return pos;
-	}, [props.goto, position, props.reloadArrow]);
+	}, [props.goto, props.action?.goto, position, props.reloadArrow]);
 	return (
 		<div id={props.id} className={"w-50 h-64 bg-stone-900 border border-neutral-400/20 rounded z-10 absolute flex flex-col gap-1 pb-1"} style={{top: position.y - (position.y % 20), left: position.x - (position.x % 20)}} onMouseDown={onMouseDown} ref={container}>
 			<h2 title={props.id} className={"text-stone-100 m-1 min-h-8 bg-neutral-900 px-2 py-1 font-mono overflow-hidden text-ellipsis"}>{props.id}</h2>

@@ -1,17 +1,18 @@
-import SideBar from "./Components/SideBar.tsx";
-import {useCallback, useEffect, useState} from "react";
-import {useCurrentQuestion} from "./CurrentQuestionHook.tsx";
+import SideBar from "./Components/SideBar";
+import {useEffect, useState} from "react";
+import {useCurrentQuestion} from "./CurrentQuestionHook";
 import type TQuestion from "./TQuestion.ts";
 import type { TAnswers, TAction } from "./TQuestion.ts";
 import type {SetState} from "./utils.ts";
-import Button from "./Components/Button.tsx";
-import Input from "./Components/Input.tsx";
+import Button from "./Components/Button";
+import Input from "./Components/Input";
 import {clsx} from "clsx";
-import Select from "./Components/Select.tsx";
+import Select from "./Components/Select";
 import {BsPlus} from "react-icons/bs";
 import {LuSave} from "react-icons/lu";
 import {MdOutlineFileOpen} from "react-icons/md";
 import {BiDownload, BiUpload} from "react-icons/bi";
+import React from "react";
 
 interface UIProps {
 	questions: TQuestion[];
@@ -20,6 +21,10 @@ interface UIProps {
 	editQuestion: (id: string, data: TQuestion) => void;
 	deleteQuestion: (id: string) => void;
 	setReloadArrow: SetState<boolean>;
+	save?: (questions: TQuestion[]) => void;
+	load?: () => Promise<TQuestion[]>;
+	export?: (questions: TQuestion[]) => void;
+	import?: () => Promise<TQuestion[]>;
 }
 
 export default function UI(props: UIProps) {
@@ -42,35 +47,6 @@ export default function UI(props: UIProps) {
 			setAction(question.action);
 		}
 	}, [question]);
-	const save = useCallback((questions: TQuestion[]) => {
-		const save = questions.map(q => {
-			const pos = document.getElementById(q.id)!.getBoundingClientRect();
-			q.position.x = pos.x;
-			q.position.y = pos.y;
-			return q;
-		});
-		const file = URL.createObjectURL(new Blob([JSON.stringify(save)], {type: "application/json"}));
-		const a = document.createElement("a");
-		a.href = file;
-		a.download = "questions.json";
-		a.click();
-		URL.revokeObjectURL(file);
-	}, []);
-	const download = useCallback((questions: TQuestion[]) => {
-		const result = {} as Record<string, {question: string | string[], goto?: string, answers: TAnswers[] | undefined, action?: TAction}>;
-		questions.forEach(q => result[q.id] = {
-			question: q.text,
-			goto: q.goto,
-			action: q.action,
-			answers: q.answers
-		});
-		const file = URL.createObjectURL(new Blob([JSON.stringify(result)], {type: "application/json"}));
-		const a = document.createElement("a");
-		a.href = file;
-		a.download = "questions.json";
-		a.click();
-		URL.revokeObjectURL(file);
-	}, []);
 	return (
 		<div className={"fixed top-0 left-0 w-0 h-0 overflow-visible text-white z-10"}>
 			<SideBar display={question !== null} setDisplay={(value) => { if(typeof value === "function") value = value(question !== null); if(!value) setQuestion(null) }} onClose={() => setQuestion(null)} onValidate={() => {
@@ -140,57 +116,22 @@ export default function UI(props: UIProps) {
 			</SideBar>
 			<div className={"p-2 fixed right-8 top-0 flex gap-2"}>
 				<Button onClick={() => props.addQuestion({x: 20, y: 20})}><BsPlus className={"w-6 h-6"}/></Button>
-				<Button onClick={() => save(props.questions)}><LuSave className={"w-6 h-6"}/></Button>
-				<label className={"bg-stone-800 rounded-lg px-2 py-1 cursor-pointer flex items-center"} htmlFor={"load"}>
-					<span><MdOutlineFileOpen className={"w-6 h-6"}/></span>
-					<input type={"file"} className={"hidden"} multiple={false} accept={".json"} id={"load"} onChange={(e) => {
-						if(e.target.files?.length === 1) {
-							e.target.files[0].text().then(v => {
-								const questions = JSON.parse(v);
-								if(typeof questions === "object" && questions instanceof Array) {
-									const validate = questions.filter(q => {
-										return typeof q["id"] === "string" && typeof q["text"] === "string" && typeof q["position"] === "object" && typeof q["position"]["x"] === "number" && typeof q["position"]["y"] === "number"
-									});
-									if(validate.length !== questions.length) {
-										console.error("Invalid file format");
-										return;
-									}
-									props.setQuestions(questions);
-									props.setReloadArrow(prev => !prev);
-								} else {
-									console.error("Invalid file format");
-								}
-							})
-						}
-					}}/>
-				</label>
-				<Button onClick={() => download(props.questions)}><BiDownload className={"w-6 h-6"}/></Button>
-				<label className={"bg-stone-800 rounded-lg px-2 py-1 cursor-pointer flex items-center"} htmlFor={"import"}>
-					<span><BiUpload className={"w-6 h-6"}/></span>
-					<input type={"file"} className={"hidden"} multiple={false} accept={".json"} id={"import"} onChange={(e) => {
-						if(e.target.files?.length === 1) {
-							e.target.files[0].text().then(v => {
-								const questions = JSON.parse(v);
-								if(typeof questions === "object") {
-									const validate = Object.values<any>(questions).filter( q => {
-										return typeof q["question"] === "string" || (typeof q["question"] === "object" && q["question"] instanceof Array)
-									});
-									if(validate.length !== Object.values(questions).length) {
-										console.error("Invalid file format");
-										return;
-									}
-									const tmp = Object.keys(questions).map((id, index) => {
-										return { id: id, text: questions[id]["question"], goto: questions[id]["goto"] ?? undefined, answers: questions[id]["answers"] ?? [], position: {x: index % 5 * 260 + 20, y: Math.floor(index / 5) * 300 + 20}, action: questions[id]["action"] ?? undefined} as TQuestion;
-									});
-									props.setQuestions(tmp);
-									props.setReloadArrow(prev => !prev);
-								} else {
-									console.error("Invalid file format");
-								}
-							})
-						}
-					}}/>
-				</label>
+				{props.save && <Button onClick={() => props.save && props.save(props.questions)}><LuSave className={"w-6 h-6"}/></Button>}
+				{props.load && <Button onClick={async () => {
+					if(props.load) {
+						const questions = await props.load();
+						props.setQuestions(questions);
+						props.setReloadArrow(prev => !prev);
+					}
+				}}><MdOutlineFileOpen className={"w-6 h-6"}/></Button>}
+				{props.export && <Button onClick={() => props.export && props.export(props.questions)}><BiDownload className={"w-6 h-6"}/></Button>}
+				{ props.import &&<Button onClick={async () => {
+					if(props.import) {
+						const questions = await props.import();
+						props.setQuestions(questions);
+						props.setReloadArrow(prev => !prev);
+					}
+				}}><BiUpload className={"w-6 h-6"}/></Button>}
 			</div>
 		</div>
 	)

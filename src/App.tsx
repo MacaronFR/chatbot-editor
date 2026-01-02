@@ -1,10 +1,18 @@
-import UI from "./UI.tsx";
-import Canva from "./Canva.tsx";
+import UI from "./UI";
+import Canva from "./Canva";
 import {useState} from "react";
 import type TQuestion from "./TQuestion.ts";
-import {CurrentQuestionProvider} from "./CurrentQuestionHook.tsx";
+import {CurrentQuestionProvider} from "./CurrentQuestionHook";
+import React from "react";
 
-export default function App() {
+interface AppProps {
+	save?: (questions: TQuestion[]) => void;
+	load?: () => Promise<TQuestion[]>;
+	export?: (questions: TQuestion[]) => void;
+	import?: () => Promise<TQuestion[]>;
+}
+
+export default function App(props: AppProps) {
 	const [questions, setQuestions] = useState<TQuestion[]>([]);
 	const [reloadArrow, setReloadArrow] = useState(false);
 	return (
@@ -24,6 +32,10 @@ export default function App() {
 				}
 					deleteQuestion={id => setQuestions(prev => prev.filter(v => v.id !== id))}
 					setQuestions={setQuestions}
+					save={props.save}
+					load={props.load}
+					export={props.export}
+					import={props.import}
 				/>
 			</div>
 		</CurrentQuestionProvider>

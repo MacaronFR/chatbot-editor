@@ -1,4 +1,5 @@
-import Question from "./Components/Question.tsx";
+import React from "react";
+import Question from "./Components/Question";
 import type TQuestion from "./TQuestion.ts";
 import type {SetState} from "./utils.ts";
 import {useEffect} from "react";

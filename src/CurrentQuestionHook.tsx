@@ -1,3 +1,4 @@
+import React from "react";
 import {createContext, type ReactNode, useContext, useState} from "react";
 import type TQuestion from "./TQuestion.ts";
 import type {SetState} from "./utils.ts";
@@ -15,6 +16,7 @@ export function CurrentQuestionProvider(props: CurrentQuestionProviderProps) {
 	</CurrentQuestionContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useCurrentQuestion() {
 	return  useContext(CurrentQuestionContext);
 }

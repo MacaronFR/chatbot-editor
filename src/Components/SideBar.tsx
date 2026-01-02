@@ -2,6 +2,7 @@ import {type ReactNode} from "react";
 import type {SetState} from "../utils.ts";
 import {clsx} from "clsx";
 import {BsCheck, BsX} from "react-icons/bs";
+import React from "react";
 
 interface SideBarProps {
 	display: boolean;
