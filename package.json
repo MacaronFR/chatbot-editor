@@ -4,6 +4,10 @@
   "repository": "MacaronFR/chatbot-editor",
   "type": "module",
   "main": "dist/index.js",
+  "files": [
+    "/dist",
+    "/index.css"
+  ],
   "types": "dist/index.d.ts",
   "scripts": {
     "dev": "vite",
