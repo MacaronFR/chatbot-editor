@@ -17,7 +17,7 @@ export default function ChatbotEditor(props: AppProps) {
 	const [reloadArrow, setReloadArrow] = useState(false);
 	return (
 		<CurrentQuestionProvider>
-			<div className={"relative h-screen w-screen overflow-hidden"}>
+			<div className={"relative h-full w-full overflow-hidden"}>
 				<Canva questions={questions} setQuestions={setQuestions} reloadArrow={reloadArrow} setReloadArrow={setReloadArrow}/>
 				<UI setReloadArrow={setReloadArrow} questions={questions} addQuestion={(initPos: {x: number, y: number}) => {
 					let idQuestion = "question";

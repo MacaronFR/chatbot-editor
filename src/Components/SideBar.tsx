@@ -14,7 +14,7 @@ interface SideBarProps {
 
 export default function SideBar(props: SideBarProps) {
 	return (
-		<div className={clsx("fixed transition w-1/3 h-screen top-0 left-0 bg-stone-900 z-50 flex flex-col", props.display && "translate-x-0" || "-translate-x-full")}>
+		<div className={clsx("fixed transition w-1/3 h-full top-0 left-0 bg-stone-900 z-50 flex flex-col", props.display && "translate-x-0" || "-translate-x-full")}>
 			<div className={"flex justify-end"}>
 				<button className={"mx-2 my-1 p-1 rounded cursor-pointer border border-stone-200/30 aspect-square w-8"} onClick={() => {
 					props.setDisplay(false);
