@@ -1,7 +1,7 @@
 import {StrictMode} from 'react'
 import {createRoot} from 'react-dom/client'
 import './index.css'
-import App from "./App";
+import ChatbotEditor from "./ChatbotEditor";
 import type TQuestion from "./TQuestion.ts";
 import type { TAction, TAnswers } from "./TQuestion.ts";
 import React from "react";
@@ -109,6 +109,6 @@ const importFile = async () => {
 
 createRoot(document.getElementById('root')!).render(
 	<StrictMode>
-		<App save={save} load={load} export={download} import={importFile}/>
+		<ChatbotEditor save={save} load={load} export={download} import={importFile}/>
 	</StrictMode>,
 )

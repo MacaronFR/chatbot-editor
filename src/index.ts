@@ -1,7 +1,7 @@
-import App from "./App";
+import ChatbotEditor from "./ChatbotEditor";
 import type TQuestion from "./TQuestion.ts";
 
 export {
-	App,
+	ChatbotEditor,
 	type TQuestion
 }

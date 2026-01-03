@@ -12,7 +12,7 @@ interface AppProps {
 	import?: () => Promise<TQuestion[]>;
 }
 
-export default function App(props: AppProps) {
+export default function ChatbotEditor(props: AppProps) {
 	const [questions, setQuestions] = useState<TQuestion[]>([]);
 	const [reloadArrow, setReloadArrow] = useState(false);
 	return (
