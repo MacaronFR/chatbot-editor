@@ -1,6 +1,6 @@
 import UI from "./UI";
 import Canva from "./Canva";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import type TQuestion from "./TQuestion.ts";
 import {CurrentQuestionProvider} from "./CurrentQuestionHook";
 import React from "react";
@@ -10,11 +10,22 @@ interface AppProps {
 	load?: () => Promise<TQuestion[]>;
 	export?: (questions: TQuestion[]) => void;
 	import?: () => Promise<TQuestion[]>;
+	init?: () => Promise<TQuestion[]>
 }
 
 export default function ChatbotEditor(props: AppProps) {
 	const [questions, setQuestions] = useState<TQuestion[]>([]);
 	const [reloadArrow, setReloadArrow] = useState(false);
+	const [init, setInit] = useState(false);
+	useEffect(() => {
+		if(props.init && !init) {
+			setInit(true);
+			props.init().then((res) => {
+				setQuestions(res);
+				setReloadArrow(prev => !prev);
+			});
+		}
+	}, [props.init]);
 	return (
 		<CurrentQuestionProvider>
 			<div className={"relative h-full w-full overflow-hidden"}>
