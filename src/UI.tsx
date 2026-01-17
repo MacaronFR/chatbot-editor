@@ -21,9 +21,9 @@ interface UIProps {
 	editQuestion: (id: string, data: TQuestion) => void;
 	deleteQuestion: (id: string) => void;
 	setReloadArrow: SetState<boolean>;
-	save?: (questions: TQuestion[]) => void;
+	save?: () => void;
 	load?: () => Promise<TQuestion[]>;
-	export?: (questions: TQuestion[]) => void;
+	export?: () => void;
 	import?: () => Promise<TQuestion[]>;
 }
 
@@ -116,16 +116,16 @@ export default function UI(props: UIProps) {
 			</SideBar>
 			<div className={"p-2 fixed right-8 top-0 flex gap-2"}>
 				<Button onClick={() => props.addQuestion({x: 20, y: 20})}><BsPlus className={"w-6 h-6"}/></Button>
-				{props.save && <Button onClick={() => props.save && props.save(props.questions)}><LuSave className={"w-6 h-6"}/></Button>}
-				{props.load && <Button onClick={async () => {
+				{props.save && <Button title={"Save"} onClick={() => props.save && props.save()}><LuSave className={"w-6 h-6"}/></Button>}
+				{props.load && <Button title={"Load"} onClick={async () => {
 					if(props.load) {
 						const questions = await props.load();
 						props.setQuestions(questions);
 						props.setReloadArrow(prev => !prev);
 					}
 				}}><MdOutlineFileOpen className={"w-6 h-6"}/></Button>}
-				{props.export && <Button onClick={() => props.export && props.export(props.questions)}><BiDownload className={"w-6 h-6"}/></Button>}
-				{ props.import &&<Button onClick={async () => {
+				{props.export && <Button title={"Export"} onClick={() => props.export && props.export()}><BiDownload className={"w-6 h-6"}/></Button>}
+				{ props.import &&<Button title={"Import"} onClick={async () => {
 					if(props.import) {
 						const questions = await props.import();
 						props.setQuestions(questions);

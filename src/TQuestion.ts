@@ -21,3 +21,5 @@ export interface TAction {
 }
 
 export type TActionValue = "set" | "ask" | "end";
+
+export type TQuestionExport = Record<string, {question: string | string[], goto?: string, answers: TAnswers[] | undefined, action?: TAction}>;
