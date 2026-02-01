@@ -20,7 +20,6 @@ export default function ColorPicker(props: ColorPickerProps) {
 	const [svSize, setSvSize] = useState([0, 0, 0, 0]);
 	const [inputFocus, setInputFocus] = useState(false);
 	const [rgbHex, setRgbHex] = useState("#ff0000");
-	const [init, setInit] = useState(false);
 	const calcRgb = useCallback(() => {
 		if(inputFocus) return;
 		const rgbHex = `#${rgb.red.toString(16).padStart(2, "0")}${rgb.green.toString(16).padStart(2, "0")}${rgb.blue.toString(16).padStart(2, "0")}`

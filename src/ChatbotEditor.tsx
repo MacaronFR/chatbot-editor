@@ -2,7 +2,7 @@ import UI from "./UI";
 import Canva from "./Canva";
 import React, {useEffect, useMemo, useState} from "react";
 import type TQuestion from "./TQuestion.ts";
-import type { TAction, TAnswers, TQuestionExport } from "./TQuestion.ts";
+import type { TAction, TAnswers } from "./TQuestion.ts";
 import {CurrentQuestionProvider} from "./CurrentQuestionHook";
 import {Theme} from "./Theme";
 import {TSave} from "./TSave";
