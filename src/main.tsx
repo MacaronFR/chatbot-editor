@@ -3,10 +3,11 @@ import {createRoot} from 'react-dom/client'
 import './index.css'
 import ChatbotEditor from "./ChatbotEditor";
 import type TQuestion from "./TQuestion.ts";
-import type { TQuestionExport } from "./TQuestion.ts";
 import React from "react";
+import {TSave} from "./TSave";
+import {TBot} from "./TBot";
 
-const save = (save: TQuestion[]) => {
+const save = (save: TSave) => {
 	const file = URL.createObjectURL(new Blob([JSON.stringify(save)], {type: "application/json"}));
 	const a = document.createElement("a");
 	a.href = file;
@@ -15,7 +16,7 @@ const save = (save: TQuestion[]) => {
 	URL.revokeObjectURL(file);
 };
 
-const download = (questions: TQuestionExport) => {
+const download = (questions: TBot) => {
 	const file = URL.createObjectURL(new Blob([JSON.stringify(questions)], {type: "application/json"}));
 	const a = document.createElement("a");
 	a.href = file;
