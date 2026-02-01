@@ -11,8 +11,10 @@ import Select from "./Components/Select";
 import {BsPlus} from "react-icons/bs";
 import {LuSave} from "react-icons/lu";
 import {MdOutlineFileOpen} from "react-icons/md";
-import {BiDownload, BiUpload} from "react-icons/bi";
+import {BiDownload, BiMenu, BiUpload} from "react-icons/bi";
 import React from "react";
+import {Theme} from "./Theme";
+import ColorPicker from "./Components/ColorPicker";
 
 interface UIProps {
 	questions: TQuestion[];
@@ -21,6 +23,11 @@ interface UIProps {
 	editQuestion: (id: string, data: TQuestion) => void;
 	deleteQuestion: (id: string) => void;
 	setReloadArrow: SetState<boolean>;
+	name: string;
+	setName: SetState<string>;
+	theme?: Theme;
+	setTheme: SetState<Theme | undefined>;
+	baseTheme?: Theme;
 	save?: () => void;
 	load?: () => Promise<TQuestion[]>;
 	export?: () => void;
@@ -28,12 +35,14 @@ interface UIProps {
 }
 
 export default function UI(props: UIProps) {
+	const { setTheme, baseTheme } = props;
 	const [question, setQuestion] = useCurrentQuestion();
 	const [id, setId] = useState("");
 	const [goto, setGoto] = useState<string>();
 	const [text, setText] = useState<string[]>([""]);
 	const [answers, setAnswers] = useState<TAnswers[]>([]);
 	const [action, setAction] = useState<TAction | undefined>(undefined);
+	const [configDisplay, setConfigDisplay] = useState(false);
 	useEffect(() => {
 		if(question) {
 			setId(question.id);
@@ -49,6 +58,21 @@ export default function UI(props: UIProps) {
 	}, [question]);
 	return (
 		<div className={"fixed top-0 left-0 w-0 h-0 overflow-visible text-white z-10"}>
+			<SideBar display={configDisplay} setDisplay={setConfigDisplay} onClose={() => setConfigDisplay(false)}>
+				<div className={"flex flex-col gap-2 overflow-auto h-full"}>
+					<Input value={props.name} onChange={e => props.setName(e.target.value)} label={"Name"}/>
+					<ColorPicker defaultValue={baseTheme?.primary ?? "#B24592"} onChange={(color) => setTheme(prev => prev ? {...prev, primary: color} : {primary: color})} label={"Primary"}/>
+					<ColorPicker defaultValue={baseTheme?.["primary-dark"] ?? "#9A0C71"} onChange={(color) => setTheme(prev => prev ? {...prev, "primary-dark": color} : {"primary-dark": color})} label={"Primary dark"}/>
+					<ColorPicker defaultValue={baseTheme?.onprimary ?? "#000"} onChange={(color) => setTheme(prev => prev ? {...prev, onprimary: color} : {onprimary: color})} label={"On Primary"}/>
+					<ColorPicker defaultValue={baseTheme?.question ?? "#F5F3F2"} onChange={(color) => setTheme(prev => prev ? {...prev, question: color} : {question: color})} label={"Question"}/>
+					<ColorPicker defaultValue={baseTheme?.["question-text"] ?? "#FFF"} onChange={(color) => setTheme(prev => prev ? {...prev, "question-text": color} : {"question-text": color})} label={"Question text"}/>
+					<ColorPicker defaultValue={baseTheme?.background ?? "#FFF"} onChange={(color) => setTheme(prev => prev ? {...prev, background: color} : {background: color})} label={"Background"}/>
+					<ColorPicker defaultValue={baseTheme?.option ?? "#33475B"} onChange={(color) => setTheme(prev => prev ? {...prev, option: color} : {option: color})} label={"Option"}/>
+					<ColorPicker defaultValue={baseTheme?.["option-hover"] ?? "#B24592"} onChange={(color) => setTheme(prev => prev ? {...prev, "option-hover": color} : {"option-hover": color})} label={"Option hover"}/>
+					<ColorPicker defaultValue={baseTheme?.input ?? "#1E2939"} onChange={(color) => setTheme(prev => prev ? {...prev, input: color} : {input: color})} label={"Input"}/>
+					<ColorPicker defaultValue={baseTheme?.["input-disabled"] ?? "#A6A09B"} onChange={(color) => setTheme(prev => prev ? {...prev, "input-disabled": color} : {"input-disabled": color})} label={"Input Disabled"}/>
+				</div>
+			</SideBar>
 			<SideBar display={question !== null} setDisplay={(value) => { if(typeof value === "function") value = value(question !== null); if(!value) setQuestion(null) }} onClose={() => setQuestion(null)} onValidate={() => {
 				const t = text.length === 1 ? text[0] : text;
 				props.editQuestion(question?.id ?? "", {id: id, text: t, goto: goto, answers: answers, position: {x: 0, y: 0}, action: action});
@@ -114,6 +138,9 @@ export default function UI(props: UIProps) {
 					}}>Delete</Button>
 				</div>
 			</SideBar>
+			<div className={"p-2 fixed left-0 top-0 flex gap-2"}>
+				<Button onClick={() => setConfigDisplay(prev => !prev)}><BiMenu className={"w-6 h-6"}/></Button>
+			</div>
 			<div className={"p-2 fixed right-8 top-0 flex gap-2"}>
 				<Button onClick={() => props.addQuestion({x: 20, y: 20})}><BsPlus className={"w-6 h-6"}/></Button>
 				{props.save && <Button title={"Save"} onClick={() => props.save && props.save()}><LuSave className={"w-6 h-6"}/></Button>}

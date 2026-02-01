@@ -4,19 +4,26 @@ import React, {useEffect, useMemo, useState} from "react";
 import type TQuestion from "./TQuestion.ts";
 import type { TAction, TAnswers, TQuestionExport } from "./TQuestion.ts";
 import {CurrentQuestionProvider} from "./CurrentQuestionHook";
+import {Theme} from "./Theme";
+import {TSave} from "./TSave";
+import {validateTheme} from "./utils";
+import {TBot} from "./TBot";
 
 interface AppProps {
-	save?: (questions: TQuestion[]) => void;
+	save?: (questions: TSave) => void;
 	load?: () => Promise<unknown>;
-	export?: (questions: TQuestionExport) => void;
+	export?: (questions: TBot) => void;
 	import?: () => Promise<unknown>;
-	init?: () => Promise<TQuestion[]>;
+	init?: () => Promise<TSave>;
 	autosaveInterval?: number;
 }
 
 export default function ChatbotEditor(props: AppProps) {
+	const [name, setName] = useState("");
+	const [theme, setTheme] = useState<Theme>();
 	const [questions, setQuestions] = useState<TQuestion[]>([]);
 	const [reloadArrow, setReloadArrow] = useState(false);
+	const [baseTheme, setBaseTheme] = useState<Theme>();
 	const save = useMemo(() => {
 		if(props.save) {
 			return () => {
@@ -26,12 +33,12 @@ export default function ChatbotEditor(props: AppProps) {
 					q.position.y = pos.y;
 					return q;
 				});
-				if(props.save) props.save(savedQuestions);
+				if(props.save) props.save({name: name, questions: savedQuestions, theme: theme});
 			}
 		} else {
 			return undefined;
 		}
-	}, [props, questions]);
+	}, [name, props, questions, theme]);
 	const exportData = useMemo(() => {
 		if(props.export) {
 			return () => {
@@ -42,26 +49,35 @@ export default function ChatbotEditor(props: AppProps) {
 					action: q.action,
 					answers: q.answers
 				});
-				if(props.export) props.export(result);
+				if(props.export) props.export({ questions: result, name: name, theme: theme});
 			};
 		} else {
 			return undefined;
 		}
-	}, [props, questions]);
+	}, [props, questions, name, theme]);
 	const load = useMemo(() => {
 		if(props.load) {
 			return async () => {
 				if(!props.load) return [];
-				const questions = await props.load();
-				if(typeof questions === "object" && questions instanceof Array) {
-					const validate = questions.filter(q => {
-						return typeof q["id"] === "string" && typeof q["text"] === "string" && typeof q["position"] === "object" && typeof q["position"]["x"] === "number" && typeof q["position"]["y"] === "number"
-					});
-					if(validate.length !== questions.length) {
+				const save = await props.load();
+				if(typeof save === "object" && (save as TSave).questions !== undefined && (save as TSave).name !== undefined && typeof (save as TSave).name === "string") {
+					setName((save as TSave).name);
+					setTheme(validateTheme((save as TSave).theme));
+					setBaseTheme(validateTheme((save as TSave).theme));
+					const questions = (save as TSave)["questions"] as unknown;
+					if(typeof questions === "object" && questions instanceof Array) {
+						const validate = questions.filter(q => {
+							return typeof q["id"] === "string" && typeof q["text"] === "string" && typeof q["position"] === "object" && typeof q["position"]["x"] === "number" && typeof q["position"]["y"] === "number"
+						});
+						if(validate.length !== questions.length) {
+							throw "Invalid file format";
+						}
+						return questions as TQuestion[];
+					} else {
 						throw "Invalid file format";
 					}
-					return questions as TQuestion[];
 				} else {
+					console.log("ICI")
 					throw "Invalid file format";
 				}
 			}
@@ -73,25 +89,33 @@ export default function ChatbotEditor(props: AppProps) {
 		if(props.import) {
 			return async () => {
 				if(!props.import) return [];
-				const questions = await props.import();
-				if (typeof questions === "object" && questions !== null) {
-					const validate = Object.values<any>(questions).filter(q => {
-						return typeof q["question"] === "string" || (typeof q["question"] === "object" && q["question"] instanceof Array)
-					});
-					if (validate.length !== Object.values(questions).length) {
+				const bot = await props.import();
+				if(typeof bot === "object" && (bot as TBot).questions !== undefined && (bot as TBot).name !== undefined && typeof (bot as TBot).name === "string") {
+					setName((bot as TBot).name);
+					setTheme(validateTheme((bot as TBot).theme));
+					setBaseTheme(validateTheme((bot as TBot).theme));
+					const questions = (bot as TBot).questions as unknown;
+					if (typeof questions === "object" && questions !== null) {
+						const validate = Object.values<any>(questions).filter(q => {
+							return typeof q["question"] === "string" || (typeof q["question"] === "object" && q["question"] instanceof Array)
+						});
+						if (validate.length !== Object.values(questions).length) {
+							throw "Invalid file format";
+						}
+						return Object.keys(questions).map((id, index) => {
+							const q = (questions as Record<string, unknown>)[id] as { question: string | string[], goto?: string, answers?: TAnswers[], action?: TAction };
+							return {
+								id: id,
+								text: q.question,
+								goto: q.goto ?? undefined,
+								answers: q.answers ?? [],
+								position: {x: index % 5 * 260 + 20, y: Math.floor(index / 5) * 300 + 20},
+								action: q.action ?? undefined
+							} as TQuestion;
+						});
+					} else {
 						throw "Invalid file format";
 					}
-					return Object.keys(questions).map((id, index) => {
-						const q = (questions as Record<string, unknown>)[id] as { question: string | string[], goto?: string, answers?: TAnswers[], action?: TAction };
-						return {
-							id: id,
-							text: q.question,
-							goto: q.goto ?? undefined,
-							answers: q.answers ?? [],
-							position: {x: index % 5 * 260 + 20, y: Math.floor(index / 5) * 300 + 20},
-							action: q.action ?? undefined
-						} as TQuestion;
-					});
 				} else {
 					throw "Invalid file format";
 				}
@@ -103,8 +127,11 @@ export default function ChatbotEditor(props: AppProps) {
 	useEffect(() => {
 		if(props.init) {
 			props.init().then((res) => {
-				setQuestions(res);
+				setQuestions(res.questions);
+				setName(res.name);
+				setTheme(res.theme);
 				setReloadArrow(prev => !prev);
+				setBaseTheme(res.theme);
 			});
 		}
 	}, [props, props.init]);
@@ -137,6 +164,9 @@ export default function ChatbotEditor(props: AppProps) {
 					load={load}
 					export={exportData}
 					import={importData}
+					name={name} setName={setName}
+					theme={theme} setTheme={setTheme}
+					baseTheme={baseTheme}
 				/>
 			</div>
 		</CurrentQuestionProvider>
