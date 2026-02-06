@@ -27,10 +27,11 @@ export default function ChatbotEditor(props: AppProps) {
 	const save = useMemo(() => {
 		if(props.save) {
 			return () => {
+				const rootPos = document.getElementById("chatbot-editor-root")!.getBoundingClientRect()
 				const savedQuestions = questions.map(q => {
 					const pos = document.getElementById(q.id)!.getBoundingClientRect();
-					q.position.x = pos.x;
-					q.position.y = pos.y;
+					q.position.x = Math.round(pos.x - rootPos.x);
+					q.position.y = Math.round(pos.y - rootPos.y);
 					return q;
 				});
 				if(props.save) props.save({name: name, questions: savedQuestions, theme: theme});
@@ -145,7 +146,7 @@ export default function ChatbotEditor(props: AppProps) {
 	}, [props.autosaveInterval, save]);
 	return (
 		<CurrentQuestionProvider>
-			<div className={"relative h-full w-full overflow-hidden"}>
+			<div className={"relative h-full w-full overflow-hidden"} id={"chatbot-editor-root"}>
 				<Canva questions={questions} setQuestions={setQuestions} reloadArrow={reloadArrow} setReloadArrow={setReloadArrow}/>
 				<UI setReloadArrow={setReloadArrow} questions={questions} addQuestion={(initPos: {x: number, y: number}) => {
 					let idQuestion = "question";
